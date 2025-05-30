@@ -7,11 +7,13 @@ body {
   height: 100vh;
   font-family: sans-serif;
   color: white;
+  text-align: center;
 }
 
 .container {
-  text-align: center;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #avatar {
@@ -22,15 +24,12 @@ body {
   animation: none;
 }
 
-#dialogueBox {
-  margin-top: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
-  display: inline-block;
-  padding: 12px 20px;
-  border-radius: 12px;
+#textDisplay {
+  margin-top: 25px;
   font-size: 18px;
-  max-width: 400px;
+  line-height: 1.6;
+  max-width: 600px;
+  padding: 0 15px;
 }
 
 /* Animación de pulsación */
