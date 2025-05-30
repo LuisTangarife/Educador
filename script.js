@@ -27,7 +27,7 @@ scene.add(directionalLight);
 const loader = new GLTFLoader();
 let avatar;
 
-loader.load('./avatar/rostro.glb', (gltf) => {
+loader.load('ps1low_poly_pilot.glb', (gltf) => {
   avatar = gltf.scene;
   avatar.scale.set(1.5, 1.5, 1.5);
   avatar.position.set(0, -0.5, 0);
