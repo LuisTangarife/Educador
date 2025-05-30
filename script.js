@@ -1,19 +1,21 @@
-const welcomeText = `Bienvenidos al Curso de Posgrado en Gestión Avanzada de Proyectos. 
-Mi nombre es Luis Alberto Benavides, seré su asistente virtual durante este apasionante viaje académico. 
-Este curso está diseñado para profesionales que desean profundizar en las mejores prácticas, herramientas y metodologías de gestión de proyectos en entornos complejos y cambiantes. 
-Exploraremos técnicas avanzadas para la planificación, ejecución, control y cierre de proyectos, con un enfoque especial en liderazgo, innovación y gestión de equipos multidisciplinarios. 
-Espero acompañarlos y guiarlos para que puedan potenciar sus habilidades y llevar sus proyectos al siguiente nivel. ¡Bienvenidos y mucho éxito!`;
+const fullText = [
+  "Bienvenidos al Curso de Posgrado en Gestión Avanzada de Proyectos.",
+  "Mi nombre es Luis Alberto Benavides, seré su asistente virtual durante este apasionante viaje académico.",
+  "Este curso está diseñado para profesionales que desean profundizar en las mejores prácticas, herramientas y metodologías de gestión de proyectos en entornos complejos y cambiantes.",
+  "Exploraremos técnicas avanzadas para la planificación, ejecución, control y cierre de proyectos, con un enfoque especial en liderazgo, innovación y gestión de equipos multidisciplinarios.",
+  "Espero acompañarlos y guiarlos para que puedan potenciar sus habilidades y llevar sus proyectos al siguiente nivel. ¡Bienvenidos y mucho éxito!"
+];
 
+let currentFragment = 0;
 let utterance;
 let isPaused = false;
 let currentCharIndex = 0;
 let textInterval;
 let voicesLoaded = false;
-
-const display = document.getElementById("textDisplay");
+let display = document.getElementById("textDisplay");
 const avatar = document.getElementById("avatar");
 
-function showTextGraduallySync(text) {
+function showTextGradually(text, callback) {
   clearInterval(textInterval);
   display.textContent = "";
   currentCharIndex = 0;
@@ -24,16 +26,18 @@ function showTextGraduallySync(text) {
       currentCharIndex++;
     } else {
       clearInterval(textInterval);
+      if (callback) callback();
     }
-  }, 50); // Ajusta velocidad si deseas más sincronización
+  }, 50);
 }
 
-function setupAndSpeak() {
-  if (!voicesLoaded) return;
+function speakFragment(index) {
+  if (index >= fullText.length) {
+    avatar.style.animation = "none";
+    return;
+  }
 
-  speechSynthesis.cancel();
-
-  utterance = new SpeechSynthesisUtterance(welcomeText);
+  utterance = new SpeechSynthesisUtterance(fullText[index]);
   utterance.lang = 'es-ES';
   utterance.pitch = 1.1;
   utterance.rate = 1;
@@ -41,17 +45,19 @@ function setupAndSpeak() {
   const voices = speechSynthesis.getVoices();
   utterance.voice =
     voices.find(v => v.lang === 'es-ES' && v.name.toLowerCase().includes("google")) ||
-    voices.find(v => v.lang === 'es-ES') || null;
+    voices.find(v => v.lang === 'es-ES');
 
   utterance.onstart = () => {
     avatar.style.animation = "pulse 1.5s ease-in-out infinite";
     isPaused = false;
-    showTextGraduallySync(welcomeText);
+    showTextGradually(fullText[index], () => {
+      // texto terminó, pero la voz puede seguir
+    });
   };
 
   utterance.onend = () => {
-    avatar.style.animation = "none";
-    clearInterval(textInterval);
+    currentFragment++;
+    speakFragment(currentFragment);
   };
 
   speechSynthesis.speak(utterance);
@@ -63,7 +69,8 @@ function playSpeech() {
     isPaused = false;
     avatar.style.animation = "pulse 1.5s ease-in-out infinite";
   } else {
-    setupAndSpeak();
+    currentFragment = 0;
+    speakFragment(currentFragment);
   }
 }
 
@@ -76,13 +83,11 @@ function pauseSpeech() {
 }
 
 function restartSpeech() {
-  if (speechSynthesis.speaking || isPaused) {
-    speechSynthesis.cancel();
-  }
+  speechSynthesis.cancel();
   isPaused = false;
-  currentCharIndex = 0;
+  currentFragment = 0;
   display.textContent = "";
-  setupAndSpeak();
+  playSpeech();
 }
 
 function loadVoices() {
@@ -105,6 +110,6 @@ document.getElementById("restartBtn").addEventListener("click", restartSpeech);
 
 loadVoices().then(() => {
   voicesLoaded = true;
-  setupAndSpeak();
+  playSpeech();
 });
 
