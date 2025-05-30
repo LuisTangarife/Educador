@@ -1,43 +1,56 @@
-function speak(text) {
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'es-ES';
-  utter.pitch = 1.1;
-  utter.rate = 1;
-
-  const voices = speechSynthesis.getVoices();
-  utter.voice = voices.find(
-    (v) => v.lang === 'es-ES' || v.name.toLowerCase().includes('google')
-  ) || voices[0];
-
-  // Mostrar texto
-  document.getElementById("dialogueBox").textContent = text;
-
-  // Cuando empieza a hablar: activar animación
-  utter.onstart = () => {
-    document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
-  };
-
-  // Cuando termina: desactivar animación
-  utter.onend = () => {
-    document.getElementById("avatar").style.animation = "none";
-  };
-
-  speechSynthesis.speak(utter);
-}
-
-// Texto de presentación del curso
 const welcomeText = `Bienvenidos al Curso de Posgrado en Gestión Avanzada de Proyectos. 
 Mi nombre es Luis Alberto Benavides, seré su asistente virtual durante este apasionante viaje académico. 
 Este curso está diseñado para profesionales que desean profundizar en las mejores prácticas, herramientas y metodologías de gestión de proyectos en entornos complejos y cambiantes. 
 Exploraremos técnicas avanzadas para la planificación, ejecución, control y cierre de proyectos, con un enfoque especial en liderazgo, innovación y gestión de equipos multidisciplinarios. 
 Espero acompañarlos y guiarlos para que puedan potenciar sus habilidades y llevar sus proyectos al siguiente nivel. ¡Bienvenidos y mucho éxito!`;
 
-// Esperar a que las voces se carguen para iniciar el habla
+function speakAndDisplay(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'es-ES';
+  utterance.pitch = 1.1;
+  utterance.rate = 1;
+
+  // Selección de voz amigable en español
+  const voices = speechSynthesis.getVoices();
+  utterance.voice =
+    voices.find(v => v.lang === 'es-ES' && v.name.toLowerCase().includes("google")) ||
+    voices.find(v => v.lang === 'es-ES') ||
+    null;
+
+  const display = document.getElementById("textDisplay");
+  display.textContent = "";
+  let index = 0;
+
+  // Mostrar texto progresivamente letra por letra
+  const interval = setInterval(() => {
+    if (index < text.length) {
+      display.textContent += text.charAt(index);
+      index++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 40); // velocidad de aparición del texto
+
+  // Animación al hablar
+  utterance.onstart = () => {
+    document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
+  };
+
+  utterance.onend = () => {
+    document.getElementById("avatar").style.animation = "none";
+  };
+
+  // Iniciar habla
+  speechSynthesis.speak(utterance);
+}
+
+// Asegura que las voces estén disponibles antes de iniciar
 if (speechSynthesis.getVoices().length === 0) {
   speechSynthesis.addEventListener("voiceschanged", () => {
-    speak(welcomeText);
+    speakAndDisplay(welcomeText);
   });
 } else {
-  speak(welcomeText);
+  speakAndDisplay(welcomeText);
 }
+
 
