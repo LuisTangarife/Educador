@@ -16,8 +16,10 @@ body {
 
 #avatar {
   width: 250px;
+  height: 250px;
   border-radius: 50%;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+  animation: none;
 }
 
 #dialogueBox {
@@ -28,4 +30,21 @@ body {
   padding: 12px 20px;
   border-radius: 12px;
   font-size: 18px;
+  max-width: 400px;
+}
+
+/* Animación de pulsación */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6), 0 0 0 0 rgba(0, 255, 255, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.9), 0 0 0 15px rgba(0, 255, 255, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6), 0 0 0 0 rgba(0, 255, 255, 0.3);
+    transform: scale(1);
+  }
 }
