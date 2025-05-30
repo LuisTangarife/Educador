@@ -5,49 +5,56 @@ Exploraremos técnicas avanzadas para la planificación, ejecución, control y c
 Espero acompañarlos y guiarlos para que puedan potenciar sus habilidades y llevar sus proyectos al siguiente nivel. ¡Bienvenidos y mucho éxito!`;
 
 let utterance;
-let interval;
 let isPaused = false;
 let currentCharIndex = 0;
+let textInterval;
 let voicesLoaded = false;
 
-// Mostrar texto letra a letra
+// Función para mostrar el texto progresivamente
 function showTextGradually(text) {
-  clearInterval(interval);
+  clearInterval(textInterval);
   const display = document.getElementById("textDisplay");
   display.textContent = "";
   currentCharIndex = 0;
-  interval = setInterval(() => {
+  textInterval = setInterval(() => {
     if (currentCharIndex < text.length) {
       display.textContent += text.charAt(currentCharIndex);
       currentCharIndex++;
     } else {
-      clearInterval(interval);
+      clearInterval(textInterval);
     }
   }, 40);
 }
 
-// Cargar voces y reproducir
+// Función para inicializar y reproducir la voz
 function setupAndSpeak() {
-  if (!utterance) {
-    utterance = new SpeechSynthesisUtterance(welcomeText);
-    utterance.lang = 'es-ES';
-    utterance.pitch = 1.1;
-    utterance.rate = 1;
-
-    const voices = speechSynthesis.getVoices();
-    utterance.voice =
-      voices.find(v => v.lang === 'es-ES' && v.name.toLowerCase().includes("google")) ||
-      voices.find(v => v.lang === 'es-ES') ||
-      null;
-
-    utterance.onstart = () => {
-      document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
-    };
-
-    utterance.onend = () => {
-      document.getElementById("avatar").style.animation = "none";
-    };
+  if (!voicesLoaded) {
+    console.error("Las voces no están cargadas aún.");
+    return;
   }
+
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+  }
+
+  utterance = new SpeechSynthesisUtterance(welcomeText);
+  utterance.lang = 'es-ES';
+  utterance.pitch = 1.1;
+  utterance.rate = 1;
+
+  const voices = speechSynthesis.getVoices();
+  utterance.voice =
+    voices.find(v => v.lang === 'es-ES' && v.name.toLowerCase().includes("google")) ||
+    voices.find(v => v.lang === 'es-ES') ||
+    null;
+
+  utterance.onstart = () => {
+    document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
+  };
+
+  utterance.onend = () => {
+    document.getElementById("avatar").style.animation = "none";
+  };
 
   // Mostrar texto y hablar
   showTextGradually(welcomeText);
@@ -67,27 +74,39 @@ function playSpeech() {
 
 // Pausar
 function pauseSpeech() {
-  speechSynthesis.pause();
-  isPaused = true;
-  document.getElementById("avatar").style.animation = "none";
+  if (speechSynthesis.speaking) {
+    speechSynthesis.pause();
+    isPaused = true;
+    document.getElementById("avatar").style.animation = "none";
+  }
 }
 
 // Reiniciar
 function restartSpeech() {
-  speechSynthesis.cancel();
-  utterance = null;
+  if (speechSynthesis.speaking || isPaused) {
+    speechSynthesis.cancel();
+  }
   isPaused = false;
   setupAndSpeak();
 }
 
 // Esperar carga de voces antes de iniciar automáticamente
-if (speechSynthesis.getVoices().length === 0) {
-  speechSynthesis.addEventListener("voiceschanged", () => {
-    voicesLoaded = true;
-    setupAndSpeak();
+function loadVoices() {
+  return new Promise((resolve) => {
+    let voices = speechSynthesis.getVoices();
+    if (voices.length !== 0) {
+      resolve(voices);
+    } else {
+      speechSynthesis.addEventListener("voiceschanged", () => {
+        voices = speechSynthesis.getVoices();
+        resolve(voices);
+      });
+    }
   });
-} else {
-  voicesLoaded = true;
-  setupAndSpeak();
 }
 
+// Inicializar
+loadVoices().then(() => {
+  voicesLoaded = true;
+  setupAndSpeak();
+});
