@@ -4,53 +4,90 @@ Este curso está diseñado para profesionales que desean profundizar en las mejo
 Exploraremos técnicas avanzadas para la planificación, ejecución, control y cierre de proyectos, con un enfoque especial en liderazgo, innovación y gestión de equipos multidisciplinarios. 
 Espero acompañarlos y guiarlos para que puedan potenciar sus habilidades y llevar sus proyectos al siguiente nivel. ¡Bienvenidos y mucho éxito!`;
 
-function speakAndDisplay(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'es-ES';
-  utterance.pitch = 1.1;
-  utterance.rate = 1;
+let utterance;
+let interval;
+let isPaused = false;
+let currentCharIndex = 0;
+let voicesLoaded = false;
 
-  // Selección de voz amigable en español
-  const voices = speechSynthesis.getVoices();
-  utterance.voice =
-    voices.find(v => v.lang === 'es-ES' && v.name.toLowerCase().includes("google")) ||
-    voices.find(v => v.lang === 'es-ES') ||
-    null;
-
+// Mostrar texto letra a letra
+function showTextGradually(text) {
+  clearInterval(interval);
   const display = document.getElementById("textDisplay");
   display.textContent = "";
-  let index = 0;
-
-  // Mostrar texto progresivamente letra por letra
-  const interval = setInterval(() => {
-    if (index < text.length) {
-      display.textContent += text.charAt(index);
-      index++;
+  currentCharIndex = 0;
+  interval = setInterval(() => {
+    if (currentCharIndex < text.length) {
+      display.textContent += text.charAt(currentCharIndex);
+      currentCharIndex++;
     } else {
       clearInterval(interval);
     }
-  }, 40); // velocidad de aparición del texto
+  }, 40);
+}
 
-  // Animación al hablar
-  utterance.onstart = () => {
-    document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
-  };
+// Cargar voces y reproducir
+function setupAndSpeak() {
+  if (!utterance) {
+    utterance = new SpeechSynthesisUtterance(welcomeText);
+    utterance.lang = 'es-ES';
+    utterance.pitch = 1.1;
+    utterance.rate = 1;
 
-  utterance.onend = () => {
-    document.getElementById("avatar").style.animation = "none";
-  };
+    const voices = speechSynthesis.getVoices();
+    utterance.voice =
+      voices.find(v => v.lang === 'es-ES' && v.name.toLowerCase().includes("google")) ||
+      voices.find(v => v.lang === 'es-ES') ||
+      null;
 
-  // Iniciar habla
+    utterance.onstart = () => {
+      document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
+    };
+
+    utterance.onend = () => {
+      document.getElementById("avatar").style.animation = "none";
+    };
+  }
+
+  // Mostrar texto y hablar
+  showTextGradually(welcomeText);
   speechSynthesis.speak(utterance);
 }
 
-// Asegura que las voces estén disponibles antes de iniciar
-if (speechSynthesis.getVoices().length === 0) {
-  speechSynthesis.addEventListener("voiceschanged", () => {
-    speakAndDisplay(welcomeText);
-  });
-} else {
-  speakAndDisplay(welcomeText);
+// Reproducir
+function playSpeech() {
+  if (isPaused) {
+    speechSynthesis.resume();
+    isPaused = false;
+    document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
+  } else {
+    setupAndSpeak();
+  }
 }
 
+// Pausar
+function pauseSpeech() {
+  speechSynthesis.pause();
+  isPaused = true;
+  document.getElementById("avatar").style.animation = "none";
+}
+
+// Reiniciar
+function restartSpeech() {
+  speechSynthesis.cancel();
+  utterance = null;
+  isPaused = false;
+  setupAndSpeak();
+}
+
+// Esperar carga de voces antes de iniciar automáticamente
+if (speechSynthesis.getVoices().length === 0) {
+  speechSynthesis.addEventListener("voiceschanged", () => {
+    voicesLoaded = true;
+    setupAndSpeak();
+  });
+} else {
+  voicesLoaded = true;
+  setupAndSpeak();
+}
 
