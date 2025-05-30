@@ -10,7 +10,6 @@ let currentCharIndex = 0;
 let textInterval;
 let voicesLoaded = false;
 
-// Función para mostrar el texto progresivamente
 function showTextGradually(text) {
   clearInterval(textInterval);
   const display = document.getElementById("textDisplay");
@@ -26,12 +25,8 @@ function showTextGradually(text) {
   }, 40);
 }
 
-// Función para inicializar y reproducir la voz
 function setupAndSpeak() {
-  if (!voicesLoaded) {
-    console.error("Las voces no están cargadas aún.");
-    return;
-  }
+  if (!voicesLoaded) return;
 
   if (speechSynthesis.speaking) {
     speechSynthesis.cancel();
@@ -56,12 +51,10 @@ function setupAndSpeak() {
     document.getElementById("avatar").style.animation = "none";
   };
 
-  // Mostrar texto y hablar
   showTextGradually(welcomeText);
   speechSynthesis.speak(utterance);
 }
 
-// Reproducir
 function playSpeech() {
   if (isPaused) {
     speechSynthesis.resume();
@@ -72,7 +65,6 @@ function playSpeech() {
   }
 }
 
-// Pausar
 function pauseSpeech() {
   if (speechSynthesis.speaking) {
     speechSynthesis.pause();
@@ -81,7 +73,6 @@ function pauseSpeech() {
   }
 }
 
-// Reiniciar
 function restartSpeech() {
   if (speechSynthesis.speaking || isPaused) {
     speechSynthesis.cancel();
@@ -90,7 +81,6 @@ function restartSpeech() {
   setupAndSpeak();
 }
 
-// Esperar carga de voces antes de iniciar automáticamente
 function loadVoices() {
   return new Promise((resolve) => {
     let voices = speechSynthesis.getVoices();
@@ -105,8 +95,14 @@ function loadVoices() {
   });
 }
 
-// Inicializar
+// Botones
+document.getElementById("playBtn").addEventListener("click", playSpeech);
+document.getElementById("pauseBtn").addEventListener("click", pauseSpeech);
+document.getElementById("restartBtn").addEventListener("click", restartSpeech);
+
+// Cargar voces y hablar automáticamente
 loadVoices().then(() => {
   voicesLoaded = true;
   setupAndSpeak();
 });
+
