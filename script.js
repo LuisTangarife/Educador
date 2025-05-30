@@ -10,27 +10,28 @@ let currentCharIndex = 0;
 let textInterval;
 let voicesLoaded = false;
 
-function showTextGradually(text) {
+const display = document.getElementById("textDisplay");
+const avatar = document.getElementById("avatar");
+
+function showTextGraduallySync(text) {
   clearInterval(textInterval);
-  const display = document.getElementById("textDisplay");
   display.textContent = "";
   currentCharIndex = 0;
   textInterval = setInterval(() => {
+    if (isPaused) return;
     if (currentCharIndex < text.length) {
       display.textContent += text.charAt(currentCharIndex);
       currentCharIndex++;
     } else {
       clearInterval(textInterval);
     }
-  }, 40);
+  }, 50); // Ajusta velocidad si deseas más sincronización
 }
 
 function setupAndSpeak() {
   if (!voicesLoaded) return;
 
-  if (speechSynthesis.speaking) {
-    speechSynthesis.cancel();
-  }
+  speechSynthesis.cancel();
 
   utterance = new SpeechSynthesisUtterance(welcomeText);
   utterance.lang = 'es-ES';
@@ -40,18 +41,19 @@ function setupAndSpeak() {
   const voices = speechSynthesis.getVoices();
   utterance.voice =
     voices.find(v => v.lang === 'es-ES' && v.name.toLowerCase().includes("google")) ||
-    voices.find(v => v.lang === 'es-ES') ||
-    null;
+    voices.find(v => v.lang === 'es-ES') || null;
 
   utterance.onstart = () => {
-    document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
+    avatar.style.animation = "pulse 1.5s ease-in-out infinite";
+    isPaused = false;
+    showTextGraduallySync(welcomeText);
   };
 
   utterance.onend = () => {
-    document.getElementById("avatar").style.animation = "none";
+    avatar.style.animation = "none";
+    clearInterval(textInterval);
   };
 
-  showTextGradually(welcomeText);
   speechSynthesis.speak(utterance);
 }
 
@@ -59,7 +61,7 @@ function playSpeech() {
   if (isPaused) {
     speechSynthesis.resume();
     isPaused = false;
-    document.getElementById("avatar").style.animation = "pulse 1.5s ease-in-out infinite";
+    avatar.style.animation = "pulse 1.5s ease-in-out infinite";
   } else {
     setupAndSpeak();
   }
@@ -69,7 +71,7 @@ function pauseSpeech() {
   if (speechSynthesis.speaking) {
     speechSynthesis.pause();
     isPaused = true;
-    document.getElementById("avatar").style.animation = "none";
+    avatar.style.animation = "none";
   }
 }
 
@@ -78,6 +80,8 @@ function restartSpeech() {
     speechSynthesis.cancel();
   }
   isPaused = false;
+  currentCharIndex = 0;
+  display.textContent = "";
   setupAndSpeak();
 }
 
@@ -95,12 +99,10 @@ function loadVoices() {
   });
 }
 
-// Botones
 document.getElementById("playBtn").addEventListener("click", playSpeech);
 document.getElementById("pauseBtn").addEventListener("click", pauseSpeech);
 document.getElementById("restartBtn").addEventListener("click", restartSpeech);
 
-// Cargar voces y hablar automáticamente
 loadVoices().then(() => {
   voicesLoaded = true;
   setupAndSpeak();
