@@ -1,16 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Agente Virtual</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+    }
+    #dialogueBox {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.9);
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-family: sans-serif;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-  <div id="container">
-    <canvas id="avatarCanvas"></canvas>
-    <div id="dialogueBox"></div>
-  </div>
+  <canvas id="avatarCanvas"></canvas>
+  <div id="dialogueBox">Cargando asistente...</div>
 
   <script type="module" src="script.js"></script>
 </body>
