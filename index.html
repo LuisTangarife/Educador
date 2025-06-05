@@ -68,29 +68,21 @@
     controls.update();
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
+    light.position.set(1, 3, 2);
     scene.add(light);
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    loader.load(
-  'Talking.fbx',
-  (object) => {
-    object.scale.set(0.05, 0.05, 0.05);
-    object.position.set(0, 0, 0);
-    mixer = new THREE.AnimationMixer(object);
-    if (object.animations.length > 0) {
-      const action = mixer.clipAction(object.animations[0]);
-      action.play();
-    }
-    scene.add(object);
-  },
-  (xhr) => {
-    console.log(`Modelo cargado: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
-  },
-  (error) => {
-    console.error('Error al cargar el modelo:', error);
-  }
-);
+    let mixer;
+    const loader = new FBXLoader();
+    loader.load('./Talking.fbx', (object) => { ... });
+      object.scale.set(0.01, 0.01, 0.01);  // Ajusta la escala
+      mixer = new THREE.AnimationMixer(object);
+      if (object.animations.length > 0) {
+        const action = mixer.clipAction(object.animations[0]);
+        action.play();
+      }
+      scene.add(object);
+    });
 
     const clock = new THREE.Clock();
 
