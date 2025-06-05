@@ -1,6 +1,6 @@
 const fullText = [
   "Bienvenidos al Curso de Posgrado en Gestión Avanzada de Proyectos.",
-  "Mi nombre es Luis Alberto Benavides, seré su asistente virtual durante este apasionante viaje académico.",
+  "Mi nombre es Luz Angela, seré su asistente virtual durante este apasionante viaje académico.",
   "Este curso está diseñado para profesionales que desean profundizar en las mejores prácticas, herramientas y metodologías de gestión de proyectos en entornos complejos y cambiantes.",
   "Exploraremos técnicas avanzadas para la planificación, ejecución, control y cierre de proyectos, con un enfoque especial en liderazgo, innovación y gestión de equipos multidisciplinarios.",
   "Espero acompañarlos y guiarlos para que puedan potenciar sus habilidades y llevar sus proyectos al siguiente nivel. ¡Bienvenidos y mucho éxito!"
