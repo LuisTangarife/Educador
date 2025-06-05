@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Asistente Virtual 3D (FBX)</title>
+  <title>Asistente Virtual 3D (GLB)</title>
   <style>
     body { margin: 0; background: #121212; }
     canvas { display: block; }
@@ -50,7 +50,7 @@
   </div>
   <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-    import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FBXLoader.js';
+    import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
     import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
     const scene = new THREE.Scene();
@@ -73,15 +73,19 @@
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
     let mixer;
-    const loader = new FBXLoader();
-    loader.load('./Talking.fbx', (object) => { ... });
-      object.scale.set(0.01, 0.01, 0.01);  // Ajusta la escala
-      mixer = new THREE.AnimationMixer(object);
-      if (object.animations.length > 0) {
-        const action = mixer.clipAction(object.animations[0]);
+    const loader = new GLTFLoader();
+    loader.load('./Talking.glb', (gltf) => {
+      const model = gltf.scene;
+      model.scale.set(1, 1, 1);  // Ajusta la escala según necesites
+      scene.add(model);
+
+      if (gltf.animations && gltf.animations.length > 0) {
+        mixer = new THREE.AnimationMixer(model);
+        const action = mixer.clipAction(gltf.animations[0]);
         action.play();
       }
-      scene.add(object);
+    }, undefined, (error) => {
+      console.error('Error al cargar el modelo:', error);
     });
 
     const clock = new THREE.Clock();
