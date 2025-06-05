@@ -33,7 +33,7 @@ function showTextGradually(text, callback) {
 
 function speakFragment(index) {
   if (index >= fullText.length) {
-    avatar.style.animation = "none";
+    avatar.pause();
     return;
   }
 
@@ -48,11 +48,9 @@ function speakFragment(index) {
     voices.find(v => v.lang === 'es-ES');
 
   utterance.onstart = () => {
-    avatar.style.animation = "pulse 1.5s ease-in-out infinite";
+    avatar.play();
     isPaused = false;
-    showTextGradually(fullText[index], () => {
-      // texto terminó, pero la voz puede seguir
-    });
+    showTextGradually(fullText[index]);
   };
 
   utterance.onend = () => {
@@ -67,7 +65,7 @@ function playSpeech() {
   if (isPaused) {
     speechSynthesis.resume();
     isPaused = false;
-    avatar.style.animation = "pulse 1.5s ease-in-out infinite";
+    avatar.play();
   } else {
     currentFragment = 0;
     speakFragment(currentFragment);
@@ -78,7 +76,7 @@ function pauseSpeech() {
   if (speechSynthesis.speaking) {
     speechSynthesis.pause();
     isPaused = true;
-    avatar.style.animation = "none";
+    avatar.pause();
   }
 }
 
@@ -112,4 +110,3 @@ loadVoices().then(() => {
   voicesLoaded = true;
   playSpeech();
 });
-
