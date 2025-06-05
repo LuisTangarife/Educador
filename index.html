@@ -75,7 +75,7 @@
     let mixer;
     const loader = new FBXLoader();
     loader.load('Talking.fbx', (object) => {
-      object.scale.set(0.01, 0.01, 0.01);  // Ajusta la escala
+      object.scale.set(0.1, 0.1, 0.1);  // Ajusta la escala
       mixer = new THREE.AnimationMixer(object);
       if (object.animations.length > 0) {
         const action = mixer.clipAction(object.animations[0]);
