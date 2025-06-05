@@ -2,31 +2,177 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Asistente Virtual 3D</title>
-  <link rel="stylesheet" href="style.css" />
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <title>Asistente Virtual 3D (FBX)</title>
+  <style>
+    body { margin: 0; background: #121212; }
+    canvas { display: block; }
+    #textDisplay {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+      font-size: 18px;
+      text-align: center;
+      max-width: 800px;
+      padding: 0 20px;
+    }
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+    }
+    button {
+      background: #00bcd4;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
+    }
+    button:hover {
+      background: #0097a7;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <model-viewer 
-      id="avatar" 
-      src="avatar3d.glb" 
-      alt="Asistente Virtual Femenina" 
-      auto-rotate 
-      camera-controls 
-      autoplay 
-      ar 
-      shadow-intensity="1" 
-      exposure="1"
-      style="width: 300px; height: 500px;">
-    </model-viewer>
-    <div id="textDisplay"></div>
-    <div class="controls">
-      <button id="playBtn">▶️ Reproducir</button>
-      <button id="pauseBtn">⏸️ Pausar</button>
-      <button id="restartBtn">🔁 Reiniciar</button>
-    </div>
+  <div id="textDisplay"></div>
+  <div class="controls">
+    <button id="playBtn">▶️ Reproducir</button>
+    <button id="pauseBtn">⏸️ Pausar</button>
+    <button id="restartBtn">🔁 Reiniciar</button>
   </div>
-  <script src="script.js"></script>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FBXLoader.js';
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x121212);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1.6, 3);
+
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 1.5, 0);
+    controls.update();
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(1, 3, 2);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    let mixer;
+    const loader = new FBXLoader();
+    loader.load('Talking.fbx', (object) => {
+      object.scale.set(0.01, 0.01, 0.01);  // Ajusta la escala
+      mixer = new THREE.AnimationMixer(object);
+      if (object.animations.length > 0) {
+        const action = mixer.clipAction(object.animations[0]);
+        action.play();
+      }
+      scene.add(object);
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (mixer) mixer.update(clock.getDelta());
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Texto y botones (igual que antes)
+    const fullText = [
+      "Bienvenidos al Curso de Posgrado en Gestión Avanzada de Proyectos.",
+      "Mi nombre es Luis Alberto Benavides...",
+      "... etc."
+    ];
+
+    let currentFragment = 0;
+    let utterance;
+    let isPaused = false;
+    let currentCharIndex = 0;
+    let textInterval;
+    const display = document.getElementById("textDisplay");
+
+    function showTextGradually(text, callback) {
+      clearInterval(textInterval);
+      display.textContent = "";
+      currentCharIndex = 0;
+      textInterval = setInterval(() => {
+        if (isPaused) return;
+        if (currentCharIndex < text.length) {
+          display.textContent += text.charAt(currentCharIndex);
+          currentCharIndex++;
+        } else {
+          clearInterval(textInterval);
+          if (callback) callback();
+        }
+      }, 50);
+    }
+
+    function speakFragment(index) {
+      if (index >= fullText.length) return;
+
+      utterance = new SpeechSynthesisUtterance(fullText[index]);
+      utterance.lang = 'es-ES';
+      utterance.pitch = 1.1;
+      utterance.rate = 1;
+
+      utterance.onstart = () => {
+        isPaused = false;
+        showTextGradually(fullText[index]);
+      };
+
+      utterance.onend = () => {
+        currentFragment++;
+        speakFragment(currentFragment);
+      };
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function playSpeech() {
+      if (isPaused) {
+        speechSynthesis.resume();
+        isPaused = false;
+      } else {
+        currentFragment = 0;
+        speakFragment(currentFragment);
+      }
+    }
+
+    function pauseSpeech() {
+      if (speechSynthesis.speaking) {
+        speechSynthesis.pause();
+        isPaused = true;
+      }
+    }
+
+    function restartSpeech() {
+      speechSynthesis.cancel();
+      isPaused = false;
+      currentFragment = 0;
+      display.textContent = "";
+      playSpeech();
+    }
+
+    document.getElementById("playBtn").addEventListener("click", playSpeech);
+    document.getElementById("pauseBtn").addEventListener("click", pauseSpeech);
+    document.getElementById("restartBtn").addEventListener("click", restartSpeech);
+  </script>
 </body>
 </html>
