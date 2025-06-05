@@ -72,17 +72,25 @@
     scene.add(light);
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    let mixer;
-    const loader = new FBXLoader();
-    loader.load('Talking.fbx', (object) => {
-      object.scale.set(0.1, 0.1, 0.1);  // Ajusta la escala
-      mixer = new THREE.AnimationMixer(object);
-      if (object.animations.length > 0) {
-        const action = mixer.clipAction(object.animations[0]);
-        action.play();
-      }
-      scene.add(object);
-    });
+    loader.load(
+  'Talking.fbx',
+  (object) => {
+    object.scale.set(0.05, 0.05, 0.05);
+    object.position.set(0, 0, 0);
+    mixer = new THREE.AnimationMixer(object);
+    if (object.animations.length > 0) {
+      const action = mixer.clipAction(object.animations[0]);
+      action.play();
+    }
+    scene.add(object);
+  },
+  (xhr) => {
+    console.log(`Modelo cargado: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
+  },
+  (error) => {
+    console.error('Error al cargar el modelo:', error);
+  }
+);
 
     const clock = new THREE.Clock();
 
